@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
+import roles
 
 
 class Server:
@@ -33,10 +34,12 @@ class Server:
             # Wait for new clients to connect
             client, address = self.socket_instance.accept()
             print(f"New client connected : {address}")
+            # Select a role to assign to the new connected client
+            role = roles.random_role()
+            # Send the selected role to the new client.
+            client.send(role.encode())
             # Sending a welcoming message to the newly connected client
-            client.send("Hello, Welcome in the ChatGame server".encode())
-            # The connected client should type its name for continue
-            client.send("Please, type your name for continue:".encode())
+            client.send(f"Hello, Welcome in the ChatGame server. Your role is: {role}\n".encode())
             # Setting up a new thread for the newly created client.
             # The thread will use the __manage_client function
             client_thread = Thread(target=self.__manage_client, args=(client,))
@@ -50,6 +53,7 @@ class Server:
         """
         # Receive the message of the user containing the name of the player
         name = client_socket.recv(Server.buffer_size).decode("utf8")
+
         welcome_message = f"Welcome on the game server {name} !\n"
         broadcast_message = f"User : {name} joined in the Chat Game server\n"
 

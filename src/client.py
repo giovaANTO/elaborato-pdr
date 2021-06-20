@@ -13,6 +13,8 @@ class Client:
         """
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
         self.socket_instance.connect((host, port))
+        self.role = self.socket_instance.recv(Client.buffer_size).decode("utf8")
+        print(self.role)
         Thread(target=self.__client_loop).start()
 
     def __client_loop(self):
@@ -36,3 +38,5 @@ class Client:
         self.socket_instance.send(message.encode())
 
 
+if __name__ == "__main__":
+    Client("", 53000)
