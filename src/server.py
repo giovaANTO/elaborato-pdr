@@ -1,5 +1,6 @@
-from socket import AF_INET, SOCK_STREAM, socket
+from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
+
 
 class Server:
     buffer_size = 4096
@@ -80,9 +81,5 @@ class Server:
             client.send(message.encode())
 
 
-def main():
-    Server('', 53000)
-
-
 if __name__ == "__main__":
-    main()
+    Server('', 53000)
