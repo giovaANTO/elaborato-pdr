@@ -4,6 +4,7 @@ import tkinter as tk
 
 from src.client.testClient import Client
 
+quit_message = "!quit"
 
 def receive():
     while True:
@@ -13,6 +14,8 @@ def receive():
             message = my_client.client_read()
             #visualizziamo l'elenco dei messaggi sullo schermo
             #e facciamo in modo che il cursore sia visibile al termine degli stessi
+            if message == quit_message:
+                on_closing()
             message_list.insert(tk.END, message)
             # Nel caso di errore e' probabile che il client abbia abbandonato la chat.
         except OSError:
@@ -26,12 +29,12 @@ def send(event=None):
         my_message.set("")
         # invia il messaggio sul socket
         my_client.send_message(message.encode())
-        if message == "{quit}":
+        if message == quit_message:
             my_client.close_connection()
             root.quit()
 
 def on_closing(event=None):
-    my_message.set("{quit}")
+    my_message.set(quit_message)
     send()
 
 root = tk.Tk()
@@ -68,12 +71,12 @@ root.protocol("WM_DELETE_WINDOW", on_closing)
 
 #----Connessione al Server----
 
-HOST = ""
-PORT = 53000
-BUFSIZ = 1024
-ADDR = (HOST, PORT)
+host = ""
+port = 53000
+buffer_size = 1024
 
-my_client = Client(HOST, PORT)
+my_client = Client(host, port)
+Thread(target=receive).start()
 
 # Avvia l'esecuzione della Finestra Chat.
 
