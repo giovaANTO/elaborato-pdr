@@ -1,10 +1,10 @@
 import random
-from socket import socket, AF_INET, SOCK_STREAM
-from threading import Thread
 import tkinter as tk
 
 from src.server.server_status import ServerStatus
 from src.utils import roles
+from socket import socket, AF_INET, SOCK_STREAM
+from threading import Thread
 
 
 class Server:
