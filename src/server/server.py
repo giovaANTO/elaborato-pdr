@@ -9,7 +9,6 @@ from threading import Thread
 class Server:
     buffer_size = 4096
     clients = {}
-    addresses = []
     scoreboard = {}
 
     def __init__(self, host, port):
@@ -33,6 +32,7 @@ class Server:
 
     def shutdown_server(self):
         if self.status == ServerStatus.RUN:
+
             self.socket_instance.close()
             self.status = ServerStatus.STOP
 
@@ -46,36 +46,36 @@ class Server:
             # Wait for new clients to connect
             client, address = self.socket_instance.accept()
             print(f"New client connected : {address}")
-            self.addresses.append(address)
-            refresh_addresses(self.addresses)
             client.send("You've successfully connected to GameChat server!\r\n".encode())
             client.send("To start playing please type your name\r\n".encode())
+            while True:
+                # Receive the message of the user containing the name of the player
+                name = client.recv(Server.buffer_size).decode("utf8")
+                # Check if the name is already present
+                if name in self.clients or name in self.scoreboard:
+                    client.send("Name already used, retry".encode())
+                else:
+                    break
+
+                # Adding the name to the list on new clients
+            self.clients[name] = client
+            # Adding the name to the scoreboard
+            self.scoreboard[name] = {"points": 0, "role": roles.random_role()}
+            # Select a role to assign to the new connected client
+            # and send it to the new client.
+            refresh_scoreboard_list(self.scoreboard)
             # Setting up a new thread for the newly created client.
             # The thread will use the __manage_client function
-            client_thread = Thread(target=self.__manage_client, args=(client,))
+            client_thread = Thread(target=self.__manage_client, args=(name,))
             # Starting up the thread.
             client_thread.start()
 
-    def __manage_client(self, client_socket):
+    def __manage_client(self, name):
         """
         This method is used for managing the connected clients.
         :param client_socket: The socket used for the communication with the client
         """
-        while True:
-            # Receive the message of the user containing the name of the player
-            name = client_socket.recv(Server.buffer_size).decode("utf8")
-            # Check if the name is already present
-            if name in self.clients or name in self.scoreboard:
-                client_socket.send("Name already used, retry".encode())
-            else:
-                break
-
-        # Adding the name to the list on new clients
-        self.clients[name] = client_socket
-        # Adding the name to the scoreboard
-        self.scoreboard[name] = {"points": 0, "role": roles.random_role()}
-        # Select a role to assign to the new connected client
-        # and send it to the new client.
+        client_socket = self.clients[name]
         while True:
 
             while True:
@@ -85,32 +85,36 @@ class Server:
                     print(f"tricky choice is number {tricky_choice}")
                     client_socket.send(choice_message.encode())
                     choice = client_socket.recv(Server.buffer_size).decode("utf8")
-                    break
+                    if choice == str(tricky_choice) or choice == "!quit":
+                        msg = "!quit"
+                        # Send a disconnection message to the user
+                        client_socket.send(msg.encode())
+                        # Disconnect the client, closing the opened socket.
+                        self.disconnect_client(name)
+                        break
+                    elif int(choice) > 3:
+                        print("Error while selecting option")
+                    else:
+                        break
                 except Exception:
                     print("Error while selecting option")
 
-            if choice == tricky_choice or choice == "quit":
-                msg = "You've chosen a tricky option, you'll be disconnected" if choice == tricky_choice else "Quitting\r\n"
-                # Send a disconnection message to the user
-                client_socket.send(msg.encode())
-                # Disconnect the client, closing the opened socket.
-                self.disconnect_client(name)
-                break
-
-            question, correct_answer = questions.select_question()
+            question, correct_answer = questions.select_question()[1]
             client_socket.send(question.encode())
             answer_given = client_socket.recv(Server.buffer_size).decode("utf8")
 
             if correct_answer == answer_given:
-                self.scoreboard[name]["score"] += 1
+                info = self.scoreboard[name]
+                info.update({"points": info.get("points") + 1})
                 msg = "Correct answer!"
-            elif answer_given == "quit":
-                msg = "Quitting server"
+            elif answer_given == "!quit":
+                msg = "!quit"
                 client_socket.send(msg.encode())
                 self.disconnect_client(name)
             else:
                 msg = "Wrong answer!"
 
+            refresh_scoreboard_list(self.scoreboard)
             client_socket.send(msg.encode())
 
     def disconnect_client(self, name):
@@ -121,22 +125,7 @@ class Server:
         self.clients[name].close()
         del self.clients[name]
         del self.scoreboard[name]
-        self.broadcast_message(f"{name} left the game")
-
-    def broadcast_message(self, message):
-        """
-        Broadcast a message to all the connected clients
-        :param message:
-            The message to send
-        """
-        for client in self.clients.values():
-            client.send(message.encode())
-
-    def get_port(self):
-        return self.port
-
-    def get_host(self):
-        return self.host
+        refresh_scoreboard_list(self.scoreboard)
 
 
 def __startup_server_cmd():
@@ -156,12 +145,14 @@ def __close_window_cmd():
     root.quit()
 
 
-def refresh_addresses(addresses):
+def refresh_scoreboard_list(scoreboard):
     textList.config(state=tk.NORMAL)
     textList.delete('1.0', tk.END)
 
-    for a in addresses:
-        textList.insert(tk.END, f"{a}\n")
+    for name in scoreboard:
+        points = scoreboard[name].get("points")
+        role = scoreboard[name].get("role")
+        textList.insert(tk.END, f"{name} - {points} - {role} \n")
 
     textList.config(state=tk.DISABLED)
 
