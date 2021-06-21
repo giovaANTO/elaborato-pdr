@@ -1,9 +1,12 @@
 import time
+import tkinter as tk
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 
 
+
 class Client:
+
     buffer_size = 4096
 
     def __init__(self, host, port):
@@ -38,6 +41,28 @@ class Client:
         :param message: Message to send
         """
         self.socket_instance.send(message.encode())
+
+window_main = tk.Tk()
+window_main.title("Game Client")
+
+myClient = Client('', 53000)
+entry_frame = tk.Frame(window_main)
+ent_text = tk.Entry(entry_frame)
+ent_text.pack(side=tk.LEFT)
+btn_send = tk.Button(entry_frame, text="Send", command=lambda: myClient.send_message(ent_text.get()))
+btn_send.pack(side=tk.LEFT)
+entry_frame.pack(side=tk.BOTTOM)
+
+chat_Frame = tk.Frame(window_main)
+scrollBar = tk.Scrollbar(chat_Frame)
+scrollBar.pack(side=tk.RIGHT, fill=tk.Y)
+tkDisplay = tk.Text(chat_Frame, height=10, width=30)
+tkDisplay.pack(side=tk.LEFT, fill=tk.Y, padx=(5, 0))
+scrollBar.config(command=tkDisplay.yview)
+tkDisplay.config(yscrollcommand=scrollBar.set, background="#F4F6F7", highlightbackground="grey", state="disabled")
+chat_Frame.pack(side=tk.TOP, pady=(5, 10))
+
+window_main.mainloop()
 
 
 if __name__ == "__main__":
