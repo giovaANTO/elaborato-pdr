@@ -1,7 +1,7 @@
 import random
 import tkinter as tk
 from src.server.server_status import ServerStatus
-from src.utils import roles
+from src.utils import roles, questions
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 
@@ -64,6 +64,7 @@ class Server:
         while True:
             # Receive the message of the user containing the name of the player
             name = client_socket.recv(Server.buffer_size).decode("utf8")
+            # Check if the name is already present
             if name in self.clients or name in self.scoreboard:
                 client_socket.send("Name already used, retry".encode())
             else:
@@ -76,11 +77,17 @@ class Server:
         # Select a role to assign to the new connected client
         # and send it to the new client.
         while True:
-            choice_message = "Make your choice, select a number between 1 and 3\r\n"
-            tricky_choice = random.randint(1, 3)
-            print(f"tricky choice is number {tricky_choice}")
-            client_socket.send(choice_message.encode())
-            choice = client_socket.recv(Server.buffer_size).decode("utf8")
+
+            while True:
+                try:
+                    choice_message = "Make your choice, select a number between 1 and 3\r\n"
+                    tricky_choice = random.randint(1, 3)
+                    print(f"tricky choice is number {tricky_choice}")
+                    client_socket.send(choice_message.encode())
+                    choice = client_socket.recv(Server.buffer_size).decode("utf8")
+                    break
+                except Exception:
+                    print("Error while selecting option")
 
             if choice == tricky_choice or choice == "quit":
                 msg = "You've chosen a tricky option, you'll be disconnected" if choice == tricky_choice else "Quitting\r\n"
@@ -89,6 +96,22 @@ class Server:
                 # Disconnect the client, closing the opened socket.
                 self.disconnect_client(name)
                 break
+
+            question, correct_answer = questions.select_question()
+            client_socket.send(question.encode())
+            answer_given = client_socket.recv(Server.buffer_size).decode("utf8")
+
+            if correct_answer == answer_given:
+                self.scoreboard[name]["score"] += 1
+                msg = "Correct answer!"
+            elif answer_given == "quit":
+                msg = "Quitting server"
+                client_socket.send(msg.encode())
+                self.disconnect_client(name)
+            else:
+                msg = "Wrong answer!"
+
+            client_socket.send(msg.encode())
 
     def disconnect_client(self, name):
         """

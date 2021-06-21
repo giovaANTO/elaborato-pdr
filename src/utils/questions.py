@@ -9,7 +9,7 @@ questions = {
 }
 
 
-def select_questions(n):
+def select_question():
     """
     Select a random number of questions from the main list.
     If n is greater or equal to the dimension of the question dictionary all questions
@@ -17,10 +17,5 @@ def select_questions(n):
     :param n: number of question to select
     :return: a list of select questions with relative answers.
     """
-    if n >= len(questions):
-        return questions
-    _out = {}
-    for k in random.sample(list(questions.keys()), 2):
-        _out[k] = questions[k]
-    return _out
+    return random.SystemRandom().choice(questions)
 
