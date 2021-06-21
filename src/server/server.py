@@ -2,6 +2,7 @@ import random
 import tkinter as tk
 from src.server.server_status import ServerStatus
 from src.utils import roles, questions
+from src.utils.app_variables import applicationVariables as appVar
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 
@@ -32,9 +33,12 @@ class Server:
 
     def shutdown_server(self):
         if self.status == ServerStatus.RUN:
-
+            for k in self.clients:
+                cli = self.clients[k]
+                cli.send(appVar.QUIT_MESSAGE.value)
             self.socket_instance.close()
             self.status = ServerStatus.STOP
+
 
     def __accept_connection(self):
         """
@@ -46,7 +50,7 @@ class Server:
             # Wait for new clients to connect
             client, address = self.socket_instance.accept()
             print(f"New client connected : {address}")
-            client.send("You've successfully connected to GameChat server!\r\n".encode())
+            client.send("Welcome to GameChat server!\r\n".encode())
             client.send("To start playing please type your name\r\n".encode())
             while True:
                 # Receive the message of the user containing the name of the player
@@ -85,8 +89,8 @@ class Server:
                     print(f"tricky choice is number {tricky_choice}")
                     client_socket.send(choice_message.encode())
                     choice = client_socket.recv(Server.buffer_size).decode("utf8")
-                    if choice == str(tricky_choice) or choice == "!quit":
-                        msg = "!quit"
+                    if choice == str(tricky_choice) or choice == appVar.QUIT_MESSAGE.value:
+                        msg = appVar.QUIT_MESSAGE.value
                         # Send a disconnection message to the user
                         client_socket.send(msg.encode())
                         # Disconnect the client, closing the opened socket.
@@ -102,16 +106,17 @@ class Server:
             question, correct_answer = questions.select_question()[1]
             client_socket.send(question.encode())
             answer_given = client_socket.recv(Server.buffer_size).decode("utf8")
+            info = self.scoreboard[name]
 
             if correct_answer == answer_given:
-                info = self.scoreboard[name]
                 info.update({"points": info.get("points") + 1})
                 msg = "Correct answer!"
-            elif answer_given == "!quit":
-                msg = "!quit"
+            elif answer_given == appVar.QUIT_MESSAGE.value:
+                msg = appVar.QUIT_MESSAGE.value
                 client_socket.send(msg.encode())
                 self.disconnect_client(name)
             else:
+                info.update({"points": info.get("points") - 1})
                 msg = "Wrong answer!"
 
             refresh_scoreboard_list(self.scoreboard)

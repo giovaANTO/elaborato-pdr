@@ -46,7 +46,7 @@ def on_closing(event=None):
     This method is used to close the client's communication with the server.
     """
     # Communication is closed by forcing the message to quit command.
-    my_message.set(appVar.QUIT_MESSAGE)
+    my_message.set(appVar.QUIT_MESSAGE.value)
     send()
 
 
@@ -84,7 +84,7 @@ root.protocol("WM_DELETE_WINDOW", on_closing)
 # *********** CONNECTION PART ***************
 
 # Set a new client's communication with the server.
-my_client = Client(appVar.HOST, appVar.PORT)
+my_client = Client(appVar.HOST.value, appVar.PORT.value)
 # Starting client's loop as the receive method.
 Thread(target=receive).start()
 

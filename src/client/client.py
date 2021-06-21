@@ -22,7 +22,7 @@ class Client:
         Execute the main loop of the Client.
         This method will try to receive messages from the Server object.
         """
-        message = self.socket_instance.recv(appVar.BUFFER_SIZE).decode("utf8")
+        message = self.socket_instance.recv(appVar.BUFFER_SIZE.value).decode("utf8")
         return message
 
     def send_message(self, message):
