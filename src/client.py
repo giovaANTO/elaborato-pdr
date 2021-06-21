@@ -1,3 +1,4 @@
+import time
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 
@@ -13,7 +14,9 @@ class Client:
         """
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
         self.socket_instance.connect((host, port))
-        self.role = self.socket_instance.recv(Client.buffer_size).decode("utf8")
+        # Await a welcome message from the server
+        message = self.socket_instance.recv(Client.buffer_size).decode("utf8")
+        print(message)
         Thread(target=self.__client_loop).start()
 
     def __client_loop(self):
@@ -38,4 +41,5 @@ class Client:
 
 
 if __name__ == "__main__":
-    Client("", 53000)
+    client = Client("", 53000)
+

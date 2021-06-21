@@ -7,6 +7,7 @@ from src.utils import roles, questions
 class Server:
     buffer_size = 4096
     clients = {}
+    scoreboard = {}
 
     def __init__(self, host, port):
         # Create a new TCP connection socket for the Server communication
@@ -35,12 +36,8 @@ class Server:
             # Wait for new clients to connect
             client, address = self.socket_instance.accept()
             print(f"New client connected : {address}")
-            # Select a role to assign to the new connected client
-            role = roles.random_role()
-            # Send the selected role to the new client.
-            client.send(role.encode())
-            # Sending a welcoming message to the newly connected client
-            client.send(f"Hello, Welcome in the ChatGame server. Your role is: {role}\n".encode())
+            client.send("You've successfully connected to GameChat server!\r\n".encode())
+            client.send("To start playing please type your name\r\n".encode())
             # Setting up a new thread for the newly created client.
             # The thread will use the __manage_client function
             client_thread = Thread(target=self.__manage_client, args=(client,))
@@ -54,33 +51,37 @@ class Server:
         """
         # Receive the message of the user containing the name of the player
         name = client_socket.recv(Server.buffer_size).decode("utf8")
-
-        welcome_message = f"Welcome on the game server {name} !\n"
-        broadcast_message = f"User : {name} joined in the Chat Game server\n"
-
-        # Adding the record to the list on new clients
-        self.clients[client_socket] = name
-        # Sending the welcoming message
-        client_socket.send(welcome_message.encode())
-        # Broadcast to the other clients that the user has joined the server
-        self.broadcast_message(broadcast_message)
-
+        print(name)
+        # Adding the name to the list on new clients
+        self.clients[name] = client_socket
+        # Adding the name to the scoreboard
+        self.scoreboard[name] = {"points": 0, "role": roles.random_role()}
+        # Select a role to assign to the new connected client
+        # and send it to the new client.
         while True:
-
-            choice_message = "Make your choice, select a number between 1 and 3"
-            tricky_choice = random.randint(1,3)
+            choice_message = "Make your choice, select a number between 1 and 3\r\n"
+            tricky_choice = random.randint(1, 3)
+            print(f"tricky choice is number {tricky_choice}")
             client_socket.send(choice_message.encode())
-            msg = client_socket.recv(Server.buffer_size).decode("utf8")
+            choice = client_socket.recv(Server.buffer_size).decode("utf8")
 
-            # Await to receive a message from the user
-            msg = client_socket.recv(Server.buffer_size).decode("utf8")
-            if msg == "quit":
+            if choice == tricky_choice or choice == "quit":
+                msg = "You've chosen a tricky option, you'll be disconnected" if choice == tricky_choice else "Quitting\r\n"
+                # Send a disconnection message to the user
+                client_socket.send(msg.encode())
                 # Disconnect the client, closing the opened socket.
-                del self.clients[client_socket]
-                client_socket.send("quit".encode())
-                client_socket.close()
-                self.broadcast_message(f"{name} left the chat\n")
+                self.disconnect_client(name)
                 break
+
+    def disconnect_client(self, name):
+        """
+        Close a connection to a client, deleting all the references
+        :param name: the name of the client to delete
+        """
+        self.clients[name].close()
+        del self.clients[name]
+        del self.scoreboard[name]
+        self.broadcast_message(f"{name} left the game")
 
     def broadcast_message(self, message):
         """
@@ -88,7 +89,7 @@ class Server:
         :param message:
             The message to send
         """
-        for client in self.clients:
+        for client in self.clients.values():
             client.send(message.encode())
 
 

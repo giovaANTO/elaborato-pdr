@@ -12,9 +12,7 @@ def random_role():
     """
     roles = ["Druid", "Wizard", "Warrior", "Thief", "Warlock", "Death King", "Demon Hunter", "Paladin", "Hunter",
              "Monk"]
-    sr = random.SystemRandom()
-    return sr.choice(roles)
-
+    return random.SystemRandom().choice(roles)
 
 if __name__ == "__main__":
     print(random_role())
