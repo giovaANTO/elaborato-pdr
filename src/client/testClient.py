@@ -1,6 +1,4 @@
-import tkinter as tk
 from socket import socket, AF_INET, SOCK_STREAM
-from threading import Thread
 
 class Client:
 
@@ -14,7 +12,6 @@ class Client:
         """
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
         self.socket_instance.connect((host, port))
-        #Thread(target=self.__client_loop).start() #Da risolvere!!
 
     def client_read(self):
         """

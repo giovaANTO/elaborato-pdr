@@ -28,7 +28,7 @@ def send(event=None):
         # libera la casella di input.
         my_message.set("")
         # invia il messaggio sul socket
-        my_client.send_message(message.encode())
+        my_client.send_message(message)
         if message == quit_message:
             my_client.close_connection()
             root.quit()
