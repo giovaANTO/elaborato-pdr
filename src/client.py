@@ -14,7 +14,6 @@ class Client:
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
         self.socket_instance.connect((host, port))
         self.role = self.socket_instance.recv(Client.buffer_size).decode("utf8")
-        print(self.role)
         Thread(target=self.__client_loop).start()
 
     def __client_loop(self):

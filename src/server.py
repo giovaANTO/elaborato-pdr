@@ -1,6 +1,7 @@
+import random
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
-import roles
+from src.utils import roles, questions
 
 
 class Server:
@@ -26,7 +27,7 @@ class Server:
 
     def __accept_connection(self):
         """
-        This method is used for the tracking of new clients that will connect to the server for
+        This method is used for tracking new clients that are connected to the server for
         participating in a new game.
         """
         print("Awaiting new connections...")
@@ -65,6 +66,12 @@ class Server:
         self.broadcast_message(broadcast_message)
 
         while True:
+
+            choice_message = "Make your choice, select a number between 1 and 3"
+            tricky_choice = random.randint(1,3)
+            client_socket.send(choice_message.encode())
+            msg = client_socket.recv(Server.buffer_size).decode("utf8")
+
             # Await to receive a message from the user
             msg = client_socket.recv(Server.buffer_size).decode("utf8")
             if msg == "quit":
