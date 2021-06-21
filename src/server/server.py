@@ -1,8 +1,10 @@
 import random
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
-from utils import roles, questions
 import tkinter as tk
+
+from src.server.server_status import ServerStatus
+from src.utils import roles
 
 
 class Server:
@@ -14,10 +16,11 @@ class Server:
     def __init__(self, host, port):
         self.host = host
         self.port = port
+        self.status = ServerStatus.STOP
 
     def start_server(self):
-        # Create a new TCP connection socket for the Server communication
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
+        # Create a new TCP connection socket for the Server communication
         print(f"Setup server connection on host:{self.host} and port:{self.port}")
         # Bind the server socket to an host (default value host) and a port
         self.socket_instance.bind((self.host, self.port))
@@ -27,9 +30,12 @@ class Server:
         thread = Thread(target=self.__accept_connection)
         # Start the thread
         thread.start()
+        self.status = ServerStatus.RUN
 
     def shutdown_server(self):
-        self.socket_instance.close()
+        if self.status == ServerStatus.RUN:
+            self.socket_instance.close()
+            self.status = ServerStatus.STOP
 
     def __accept_connection(self):
         """
@@ -105,6 +111,34 @@ class Server:
     def get_host(self):
         return self.host
 
+
+def __startup_server_cmd():
+    server.start_server()
+    startServerButton.config(state=tk.DISABLED)
+    shutdownServerButton.config(state=tk.NORMAL)
+
+
+def __shutdown_server_cmd():
+    server.shutdown_server()
+    startServerButton.config(state=tk.NORMAL)
+    shutdownServerButton.config(state=tk.DISABLED)
+
+
+def __close_window_cmd():
+    server.shutdown_server()
+    root.quit()
+
+
+def refresh_addresses(addresses):
+    textList.config(state=tk.NORMAL)
+    textList.delete('1.0', tk.END)
+
+    for a in addresses:
+        textList.insert(tk.END, f"{a}\n")
+
+    textList.config(state=tk.DISABLED)
+
+
 if __name__ == "__main__":
     server = Server('', 53000)
 
@@ -129,25 +163,5 @@ if __name__ == "__main__":
     textList.pack()
     clientListFrame.pack(side=tk.BOTTOM, pady=(5, 10))
 
+    root.protocol("WM_DELETE_WINDOW", __close_window_cmd)
     root.mainloop()
-
-def __startup_server_cmd():
-    server.start_server()
-    startServerButton.config(state=tk.DISABLED)
-    shutdownServerButton.config(state=tk.NORMAL)
-
-
-def __shutdown_server_cmd():
-    server.shutdown_server()
-    startServerButton.config(state=tk.NORMAL)
-    shutdownServerButton.config(state=tk.DISABLED)
-
-
-def refresh_addresses(addresses):
-    textList.config(state=tk.NORMAL)
-    textList.delete('1.0', tk.END)
-
-    for a in addresses:
-        textList.insert(tk.END, f"{a}\n")
-
-    textList.config(state=tk.DISABLED)
