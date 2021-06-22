@@ -53,7 +53,7 @@ class Client:
             self.client_status = appVar.CLIENT_RUNNING_STATUS.value
 
     def check_output_message(self, message):
-        if self.client_status == appVar.CLIENT_RUNNING_STATUS.value:
+        if (self.client_status == appVar.CLIENT_RUNNING_STATUS.value) or (message == appVar.QUIT_MESSAGE.value):
             self.socket_instance.send(message.encode())
             return message
         elif self.client_status == appVar.CLIENT_PAUSED_STATUS.value:
