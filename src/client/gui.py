@@ -82,7 +82,7 @@ if __name__ == "__main__":
     send_button = tk.Button(root, text="Send", command=send)
     send_button.pack()
 
-    # Handel the closing window event.
+    # Handle the closing window event.
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
 # *********** CONNECTION PART ***************
