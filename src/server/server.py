@@ -80,7 +80,7 @@ class Server:
         # Select a role to assign to the new connected client
         # and send it to the new client.
         refresh_scoreboard_list(self.scoreboard)
-        
+
         while True:
             exit_loop = False
             while True:
