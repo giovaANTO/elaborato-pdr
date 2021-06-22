@@ -22,7 +22,7 @@ class ApplicationVariables(Enum):
     #
     SERVER_MATCH_PAUSED = 4
     # Minimum participant that should join the server before the game starts
-    MIN_PARTICIPANTS = 3
+    MIN_PARTICIPANTS = 2
 
 
     """
