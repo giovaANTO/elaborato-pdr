@@ -5,6 +5,8 @@ class ApplicationVariables(Enum):
     """
     Client variables
     """
+    # Starting client's status value.
+    CLIENT_STARTING_STATUS = 0
     # Running client's status value.
     CLIENT_RUNNING_STATUS = 1
     # Paused client's status value.

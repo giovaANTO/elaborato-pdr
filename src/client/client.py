@@ -8,12 +8,12 @@ This class contains basic logics of a client's communication with the server.
 
 class Client:
 
-    client_status = 0
+    client_status = appVar.CLIENT_STARTING_STATUS.value
 
     def __init__(self, host, port):
         """
         Establish a connection to the main chat game server.
-        The client is set
+        The client starts in a running status to allow the name sending.
         :param host: Host of the server
         :param port: Port of the server
         """
@@ -45,7 +45,12 @@ class Client:
         self.socket_instance.close()
 
     def check_message(self, message):
+        """
+        Check if the message received by the server is a command to change the Client's status.
+        :param message:
+        :return:
+        """
         if message == appVar.CLIENT_PAUSED_MESSAGE.value:
             self.client_status = appVar.CLIENT_PAUSED_STATUS.value
-        if message == appVar.CLIENT_RUNNING_MESSAGE.value:
+        elif message == appVar.CLIENT_RUNNING_MESSAGE.value:
             self.client_status = appVar.CLIENT_RUNNING_STATUS.value
