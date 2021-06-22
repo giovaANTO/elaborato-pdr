@@ -19,6 +19,8 @@ class ApplicationVariables(Enum):
     SERVER_RUNNING_STATUS = 1
     # Stopped server's status value.
     SERVER_STOPPED_STATUS = 2
+    # Minimum participant that should join the server before the game starts
+    MIN_PARTICIPANTS = 3
 
     """
     Shared variables
