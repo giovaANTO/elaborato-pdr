@@ -42,6 +42,7 @@ class Server:
             try:
                 self.socket_instance.close()
                 self.server_status = appVar.SERVER_STOPPED_STATUS.value
+                self.match_status = appVar.SERVER_MATCH_PAUSED.value
             except Exception as e:
                 print(f"Error : {str(e)}")
 
@@ -74,9 +75,10 @@ class Server:
         self.broadcast_message(appVar.CLIENT_RUNNING_MESSAGE.value)
         match_timer = appVar.MATCH_TIMER.value
         while match_timer >= 0:
-            if self.server_status == appVar.SERVER_STOPPED_STATUS:
+            if self.server_status == appVar.SERVER_STOPPED_STATUS.value:
                 sys.exit(0)
             else:
+                print(match_timer)
                 time.sleep(1)
                 match_timer -= 1
         self.match_status = appVar.SERVER_MATCH_PAUSED.value
@@ -138,6 +140,8 @@ class Server:
                         print(f"[Inside loop] Error while selecting option")
                     else:
                         break
+                except OSError as ose:
+                    sys.exit(0)
                 except Exception as e:
                     print(f"[Exception] unexpected error {str(e)}")
 
@@ -226,10 +230,9 @@ def shutdown_server_cmd():
 
 
 def close_window_cmd():
-    server.shutdown_server()
-    startServerButton.config(state=tk.DISABLED)
-    shutdownServerButton.config(state=tk.DISABLED)
     root.quit()
+    server.shutdown_server()
+
 
 
 def refresh_scoreboard_list(scoreboard):

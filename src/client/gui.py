@@ -19,7 +19,8 @@ def receive():
                 on_closing()
             message_list.insert(tk.END, message)
             # In case an error occurs, probably the client left the chat.
-        except OSError:
+        except OSError as e:
+            print(str(e))
             break
 
 
