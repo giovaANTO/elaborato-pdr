@@ -238,7 +238,6 @@ def close_window_cmd():
     server.shutdown_server()
 
 
-
 def refresh_scoreboard_list(scoreboard):
     textList.config(state=tk.NORMAL)
     textList.delete('1.0', tk.END)
