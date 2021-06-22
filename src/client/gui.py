@@ -30,14 +30,15 @@ def send(event=None):
     # If the user has written a message, it's sent to the server.
     if len(my_message.get()) > 0:
         message = my_message.get()
-        # The message is shown on screen.
-        message_list.insert(tk.END, message)
         # The input box is erased.
         my_message.set("")
         # The message is then sent to the server.
-        my_client.send_message(message)
+        output_message = my_client.send_message(message)
+        # The message is shown on screen.
+        if len(output_message) > 0:
+            message_list.insert(tk.END, output_message)
         # If the message contains the quit command, communications must be interrupted.
-        if message == appVar.QUIT_MESSAGE.value:
+        if output_message == appVar.QUIT_MESSAGE.value:
             my_client.close_connection()
             root.quit()
 
