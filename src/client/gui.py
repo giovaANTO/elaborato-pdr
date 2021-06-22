@@ -1,3 +1,4 @@
+import time
 import tkinter as tk
 from threading import Thread
 from src.utils.app_variables import applicationVariables as appVar

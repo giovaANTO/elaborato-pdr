@@ -1,4 +1,5 @@
 import random
+import sys
 import tkinter as tk
 import time
 from src.server.server_status import ServerStatus
@@ -70,10 +71,12 @@ class Server:
             # Check if the name is already present
             if name in self.clients or name in self.scoreboard:
                 client_socket.send("Name already used, retry".encode())
+            elif name == appVar.QUIT_MESSAGE.value:
+                sys.exit(0)
             else:
                 break
 
-            # Adding the name to the list on new clients
+        # Adding the name to the list on new clients
         self.clients[name] = client_socket
         # Adding the name to the scoreboard
         self.scoreboard[name] = {"points": 0, "role": roles.random_role()}
@@ -82,7 +85,6 @@ class Server:
         refresh_scoreboard_list(self.scoreboard)
 
         while True:
-            exit_loop = False
             while True:
                 try:
                     choice_message = "Make your choice, select a number between 1 and 3\r\n"
@@ -90,26 +92,21 @@ class Server:
                     print(f"tricky choice is number {tricky_choice}")
                     client_socket.send(choice_message.encode())
                     choice = client_socket.recv(Server.buffer_size).decode("utf8")
-                    if choice == str(tricky_choice) or choice == appVar.QUIT_MESSAGE.value:
+                    if choice == str(tricky_choice):
                         msg = "You choose the tricky choice, bye...\r\n"
                         client_socket.send(msg.encode())
                         time.sleep(1)
-                        msg = appVar.QUIT_MESSAGE.value
-                        # Send a disconnection message to the user
-                        client_socket.send(msg.encode())
-                        # Disconnect the client, closing the opened socket.
                         self.disconnect_client(name)
-                        exit_loop = True
-                        break
+                        sys.exit(0)
+                    elif choice == appVar.QUIT_MESSAGE.value:
+                        self.disconnect_client(name)
+                        sys.exit(0)
                     elif int(choice) > 3:
-                        print("Error while selecting option")
+                        print(f"[Inside loop] Error while selecting option {choice}")
                     else:
                         break
-                except Exception:
-                    print("Error while selecting option")
-
-            if exit_loop:
-                break
+                except Exception as e:
+                    print(f"[Inside loop] Error while selecting option")
 
             question, correct_answer = questions.select_question()[1]
             client_socket.send(question.encode())
@@ -123,6 +120,7 @@ class Server:
                 msg = appVar.QUIT_MESSAGE.value
                 client_socket.send(msg.encode())
                 self.disconnect_client(name)
+                sys.exit(0)
             else:
                 info.update({"points": info.get("points") - 1})
                 msg = "Wrong answer!"
@@ -135,7 +133,12 @@ class Server:
         Close a connection to a client, deleting all the references
         :param name: the name of the client to delete
         """
-        self.clients[name].close()
+        client = self.clients[name]
+        msg = appVar.QUIT_MESSAGE.value
+        # Send a disconnection message to the user
+        client.send(msg.encode())
+        # Disconnect the client, closing the opened socket.
+        client.close()
         del self.clients[name]
         del self.scoreboard[name]
         refresh_scoreboard_list(self.scoreboard)
