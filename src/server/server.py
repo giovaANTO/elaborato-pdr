@@ -53,36 +53,36 @@ class Server:
             print(f"New client connected : {address}")
             client.send("Welcome to GameChat server!\r\n".encode())
             client.send("To start playing please type your name\r\n".encode())
-            while True:
-                # Receive the message of the user containing the name of the player
-                name = client.recv(Server.buffer_size).decode("utf8")
-                # Check if the name is already present
-                if name in self.clients or name in self.scoreboard:
-                    client.send("Name already used, retry".encode())
-                else:
-                    break
-
-                # Adding the name to the list on new clients
-            self.clients[name] = client
-            # Adding the name to the scoreboard
-            self.scoreboard[name] = {"points": 0, "role": roles.random_role()}
-            # Select a role to assign to the new connected client
-            # and send it to the new client.
-            refresh_scoreboard_list(self.scoreboard)
             # Setting up a new thread for the newly created client.
             # The thread will use the __manage_client function
-            client_thread = Thread(target=self.__manage_client, args=(name,))
+            client_thread = Thread(target=self.__manage_client, args=(client,))
             # Starting up the thread.
             client_thread.start()
 
-    def __manage_client(self, name):
+    def __manage_client(self, client_socket):
         """
         This method is used for managing the connected clients.
         :param client_socket: The socket used for the communication with the client
         """
-        client_socket = self.clients[name]
         while True:
+            # Receive the message of the user containing the name of the player
+            name = client_socket.recv(Server.buffer_size).decode("utf8")
+            # Check if the name is already present
+            if name in self.clients or name in self.scoreboard:
+                client_socket.send("Name already used, retry".encode())
+            else:
+                break
 
+            # Adding the name to the list on new clients
+        self.clients[name] = client_socket
+        # Adding the name to the scoreboard
+        self.scoreboard[name] = {"points": 0, "role": roles.random_role()}
+        # Select a role to assign to the new connected client
+        # and send it to the new client.
+        refresh_scoreboard_list(self.scoreboard)
+        
+        while True:
+            exit_loop = False
             while True:
                 try:
                     choice_message = "Make your choice, select a number between 1 and 3\r\n"
@@ -99,6 +99,7 @@ class Server:
                         client_socket.send(msg.encode())
                         # Disconnect the client, closing the opened socket.
                         self.disconnect_client(name)
+                        exit_loop = True
                         break
                     elif int(choice) > 3:
                         print("Error while selecting option")
@@ -106,6 +107,9 @@ class Server:
                         break
                 except Exception:
                     print("Error while selecting option")
+
+            if exit_loop:
+                break
 
             question, correct_answer = questions.select_question()[1]
             client_socket.send(question.encode())
