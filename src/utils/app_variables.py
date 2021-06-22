@@ -17,8 +17,13 @@ class ApplicationVariables(Enum):
     SERVER_RUNNING_STATUS = 1
     # Stopped server's status value.
     SERVER_STOPPED_STATUS = 2
+    #
+    SERVER_MATCH_STARTED = 3
+    #
+    SERVER_MATCH_PAUSED = 4
     # Minimum participant that should join the server before the game starts
     MIN_PARTICIPANTS = 3
+
 
     """
     Shared variables
@@ -29,7 +34,8 @@ class ApplicationVariables(Enum):
     PORT = 53000
     # The buffer's size value used to store incoming messages.
     BUFFER_SIZE = 4096
-
+    # The amount of seconds of a game match
+    MATCH_TIMER = 30
     """
     Command variables
     """

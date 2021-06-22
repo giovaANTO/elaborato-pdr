@@ -16,7 +16,7 @@ class Server:
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.status = appVar.SERVER_STOPPED_STATUS.value
+        self.server_status = appVar.SERVER_STOPPED_STATUS.value
 
     def start_server(self):
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
@@ -30,17 +30,17 @@ class Server:
         thread = Thread(target=self.__accept_connection)
         # Start the thread
         thread.start()
-        self.status = appVar.SERVER_RUNNING_STATUS.value
+        self.server_status = appVar.SERVER_RUNNING_STATUS.value
 
     def shutdown_server(self):
-        if self.status == appVar.SERVER_RUNNING_STATUS.value:
+        if self.server_status == appVar.SERVER_RUNNING_STATUS.value:
             print("Shutdown server....closing all client instances")
-            for k in self.clients:
-                cli = self.clients[k]["socket"]
-                cli.send(appVar.QUIT_MESSAGE.value.encode())
+            clients = self.clients.copy()
+            for name in clients:
+                self.disconnect_client(name)
             try:
                 self.socket_instance.close()
-                self.status = appVar.SERVER_STOPPED_STATUS.value
+                self.server_status = appVar.SERVER_STOPPED_STATUS.value
             except Exception as e:
                 print(f"Error : {str(e)}")
 
@@ -61,6 +61,35 @@ class Server:
             client_thread = Thread(target=self.__manage_client, args=(client,))
             # Starting up the thread.
             client_thread.start()
+
+    def __timer_handler(self):
+        self.broadcast_message("Ready in 5 seconds")
+        time.sleep(5)
+        self.broadcast_message(appVar.CLIENT_RUNNING_MESSAGE.value)
+
+        match_timer = appVar.MATCH_TIMER.value
+        while match_timer >= 0:
+            if self.server_status == appVar.SERVER_STOPPED_STATUS:
+                sys.exit(0)
+            else:
+                time.sleep(1)
+                match_timer -= 1
+
+        if len(self.scoreboard) > 0:
+            self.broadcast_message(appVar.CLIENT_PAUSED_MESSAGE.value)
+            time.sleep(1)
+            winner, points = self.__get_max_player()
+            self.broadcast_message(f"the winner is {winner} with {points} points")
+            time.sleep(2)
+            self.shutdown_server()
+
+    def __get_max_player(self):
+        max_score = []
+        for name in self.clients:
+            points = self.clients[name]["points"]
+            if max_score and points >= max_score[1]:
+                max_score = [name, points]
+        return max_score
 
     def __manage_client(self, client_socket):
         """
@@ -102,7 +131,8 @@ class Server:
                     else:
                         break
                 except Exception as e:
-                    print(f"[Inside Exception] Error while selecting option")
+                    print(f"[Exception] unexpected error")
+                    sys.exit(0)
 
             question, correct_answer = questions.select_question()[1]
             client_socket.send(question.encode())
@@ -126,7 +156,7 @@ class Server:
 
     def register_client(self, name, client_socket):
         if len(self.clients) < appVar.MIN_PARTICIPANTS.value:
-            client_socket.send(appVar.CLIENT_PAUSED_MESSAGE.value.encode())
+            self.send_message(appVar.CLIENT_PAUSED_MESSAGE.value, client_socket)
             # Adding the name to the list on new clients
             self.clients[name] = {"socket": client_socket, "status": appVar.CLIENT_PAUSED_STATUS.value}
             # Adding the name to the scoreboard
@@ -134,13 +164,23 @@ class Server:
             # Select a role to assign to the new connected client
             # and send it to the new client.
             refresh_scoreboard_list(self.scoreboard)
+            if len(self.clients) == appVar.MIN_PARTICIPANTS.value:
+                print("Timer started")
+                Thread(target=self.__timer_handler).start()
+            else:
+                remaining = appVar.MIN_PARTICIPANTS.value - len(self.clients)
+                self.broadcast_message(f"waiting for :  {remaining} more participants")
+        else:
+            self.send_message("A game is just started, please retry later", client_socket)
+            time.sleep(1)
+            self.send_message(appVar.QUIT_MESSAGE.value, client_socket)
 
     def disconnect_client(self, name):
         """
         Close a connection to a client, deleting all the references
         :param name: the name of the client to delete
         """
-        client = self.clients[name]
+        client = self.clients[name]["socket"]
         msg = appVar.QUIT_MESSAGE.value
         # Send a disconnection message to the user
         client.send(msg.encode())
@@ -150,10 +190,13 @@ class Server:
         del self.scoreboard[name]
         refresh_scoreboard_list(self.scoreboard)
 
+    def send_message(self, message, client):
+        client.send(message.encode())
 
-
-
-
+    def broadcast_message(self, message):
+        for name in self.clients:
+            client = self.clients[name]["socket"]
+            self.send_message(message, client)
 
 
 def __startup_server_cmd():
@@ -161,29 +204,23 @@ def __startup_server_cmd():
     startServerButton.config(state=tk.DISABLED)
     shutdownServerButton.config(state=tk.NORMAL)
 
-
 def __shutdown_server_cmd():
     server.shutdown_server()
     startServerButton.config(state=tk.NORMAL)
     shutdownServerButton.config(state=tk.DISABLED)
 
-
 def __close_window_cmd():
     server.shutdown_server()
     root.quit()
 
-
 def refresh_scoreboard_list(scoreboard):
     textList.config(state=tk.NORMAL)
     textList.delete('1.0', tk.END)
-
     for name in scoreboard:
         points = scoreboard[name].get("points")
         role = scoreboard[name].get("role")
         textList.insert(tk.END, f"{name} - {points} - {role} \n")
-
     textList.config(state=tk.DISABLED)
-
 
 if __name__ == "__main__":
     server = Server('', 53000)
