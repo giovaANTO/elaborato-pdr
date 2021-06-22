@@ -20,6 +20,10 @@ class Server:
         self.match_status = appVar.SERVER_MATCH_PAUSED.value
 
     def start_server(self):
+        """
+        Starts the server establishing a new tcp socket connection
+        and
+        """
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
         # Create a new TCP connection socket for the Server communication
         print(f"Setup server connection on host:{self.host} and port:{self.port}")
@@ -77,8 +81,9 @@ class Server:
         while match_timer >= 0:
             if self.server_status == appVar.SERVER_STOPPED_STATUS.value:
                 sys.exit(0)
+            elif len(self.clients) == 0:
+                break
             else:
-                print(match_timer)
                 time.sleep(1)
                 match_timer -= 1
         self.match_status = appVar.SERVER_MATCH_PAUSED.value
@@ -86,10 +91,10 @@ class Server:
             self.broadcast_message(appVar.CLIENT_PAUSED_MESSAGE.value)
             time.sleep(1)
             winner, points = self.__get_max_player()
-            print(winner, points)
             self.broadcast_message(f"the winner is {winner} with {points} points")
             time.sleep(4)
-            shutdown_server_cmd()
+
+        shutdown_server_cmd()
 
     def __get_max_player(self):
         max_score = []
@@ -124,7 +129,6 @@ class Server:
                 try:
                     choice_message = "Make your choice, select a number between 1 and 3\r\n"
                     tricky_choice = random.randint(1, 3)
-                    print(f"tricky choice is number {tricky_choice}")
                     self.send_message(choice_message, client_socket)
                     choice = self.receive_message(client_socket)
                     if choice == str(tricky_choice):
