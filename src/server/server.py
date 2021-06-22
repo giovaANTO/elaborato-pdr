@@ -10,7 +10,6 @@ from src.utils.app_variables import ApplicationVariables as appVar
 
 
 class Server:
-    buffer_size = 4096
     clients = {}
     scoreboard = {}
 
@@ -35,12 +34,15 @@ class Server:
 
     def shutdown_server(self):
         if self.status == appVar.SERVER_RUNNING_STATUS.value:
+            print("Shutdown server....closing all client instances")
             for k in self.clients:
                 cli = self.clients[k]
-                cli.send(appVar.QUIT_MESSAGE.value)
-            self.socket_instance.close()
-            self.status = appVar.SERVER_STOPPED_STATUS.value
-
+                cli.send(appVar.QUIT_MESSAGE.value.encode())
+            try :
+                self.socket_instance.close()
+                self.status = appVar.SERVER_STOPPED_STATUS.value
+            except Exception as e:
+                print(f"Error : {str(e)}")
 
     def __accept_connection(self):
         """
@@ -67,7 +69,7 @@ class Server:
         """
         while True:
             # Receive the message of the user containing the name of the player
-            name = client_socket.recv(Server.buffer_size).decode("utf8")
+            name = client_socket.recv(appVar.BUFFER_SIZE.value).decode("utf8")
             # Check if the name is already present
             if name in self.clients or name in self.scoreboard:
                 client_socket.send("Name already used, retry".encode())
@@ -91,7 +93,7 @@ class Server:
                     tricky_choice = random.randint(1, 3)
                     print(f"tricky choice is number {tricky_choice}")
                     client_socket.send(choice_message.encode())
-                    choice = client_socket.recv(Server.buffer_size).decode("utf8")
+                    choice = client_socket.recv(appVar.BUFFER_SIZE.value).decode("utf8")
                     if choice == str(tricky_choice):
                         msg = "You choose the tricky choice, bye...\r\n"
                         client_socket.send(msg.encode())
@@ -102,15 +104,15 @@ class Server:
                         self.disconnect_client(name)
                         sys.exit(0)
                     elif int(choice) > 3:
-                        print(f"[Inside loop] Error while selecting option {choice}")
+                        print(f"[Inside loop] Error while selecting option")
                     else:
                         break
                 except Exception as e:
-                    print(f"[Inside loop] Error while selecting option")
+                    print(f"[Inside Exception] Error while selecting option")
 
             question, correct_answer = questions.select_question()[1]
             client_socket.send(question.encode())
-            answer_given = client_socket.recv(Server.buffer_size).decode("utf8")
+            answer_given = client_socket.recv(appVar.BUFFER_SIZE.value).decode("utf8")
             info = self.scoreboard[name]
 
             if correct_answer == answer_given:
@@ -190,7 +192,7 @@ if __name__ == "__main__":
     startupFrame.pack(side=tk.TOP, pady=(10, 0))
 
     clientListFrame = tk.Frame(root)
-    clientListFrameTitle = tk.Label(clientListFrame, text="Connected clients:").pack()
+    clientListFrameTitle = tk.Label(clientListFrame, text="Scoreboard:").pack()
     textList = tk.Text(clientListFrame, height=10, width=30)
     textList.tag_configure("center", justify="center")
     textList.config(state=tk.DISABLED)
