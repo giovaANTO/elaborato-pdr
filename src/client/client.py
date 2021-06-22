@@ -13,6 +13,7 @@ class Client:
     def __init__(self, host, port):
         """
         Establish a connection to the main chat game server.
+        The client is set
         :param host: Host of the server
         :param port: Port of the server
         """
