@@ -82,7 +82,7 @@ class Server:
         """
         client_socket = self.clients[name]
         while True:
-
+            exit_loop = False
             while True:
                 try:
                     choice_message = "Make your choice, select a number between 1 and 3\r\n"
@@ -99,6 +99,7 @@ class Server:
                         client_socket.send(msg.encode())
                         # Disconnect the client, closing the opened socket.
                         self.disconnect_client(name)
+                        exit_loop = True
                         break
                     elif int(choice) > 3:
                         print("Error while selecting option")
@@ -106,6 +107,9 @@ class Server:
                         break
                 except Exception:
                     print("Error while selecting option")
+
+            if exit_loop:
+                break
 
             question, correct_answer = questions.select_question()[1]
             client_socket.send(question.encode())
