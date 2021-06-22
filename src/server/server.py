@@ -36,9 +36,9 @@ class Server:
         if self.status == appVar.SERVER_RUNNING_STATUS.value:
             print("Shutdown server....closing all client instances")
             for k in self.clients:
-                cli = self.clients[k]
+                cli = self.clients[k]["socket"]
                 cli.send(appVar.QUIT_MESSAGE.value.encode())
-            try :
+            try:
                 self.socket_instance.close()
                 self.status = appVar.SERVER_STOPPED_STATUS.value
             except Exception as e:
@@ -78,13 +78,7 @@ class Server:
             else:
                 break
 
-        # Adding the name to the list on new clients
-        self.clients[name] = client_socket
-        # Adding the name to the scoreboard
-        self.scoreboard[name] = {"points": 0, "role": roles.random_role()}
-        # Select a role to assign to the new connected client
-        # and send it to the new client.
-        refresh_scoreboard_list(self.scoreboard)
+        self.register_client(name, client_socket)
 
         while True:
             while True:
@@ -130,6 +124,17 @@ class Server:
             refresh_scoreboard_list(self.scoreboard)
             client_socket.send(msg.encode())
 
+    def register_client(self, name, client_socket):
+        if len(self.clients) < appVar.MIN_PARTICIPANTS.value:
+            client_socket.send(appVar.CLIENT_PAUSED_MESSAGE.value.encode())
+            # Adding the name to the list on new clients
+            self.clients[name] = {"socket": client_socket, "status": appVar.CLIENT_PAUSED_STATUS.value}
+            # Adding the name to the scoreboard
+            self.scoreboard[name] = {"points": 0, "role": roles.random_role()}
+            # Select a role to assign to the new connected client
+            # and send it to the new client.
+            refresh_scoreboard_list(self.scoreboard)
+
     def disconnect_client(self, name):
         """
         Close a connection to a client, deleting all the references
@@ -144,6 +149,11 @@ class Server:
         del self.clients[name]
         del self.scoreboard[name]
         refresh_scoreboard_list(self.scoreboard)
+
+
+
+
+
 
 
 def __startup_server_cmd():
