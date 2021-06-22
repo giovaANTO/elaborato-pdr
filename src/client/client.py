@@ -56,6 +56,8 @@ class Client:
         elif message == appVar.CLIENT_RUNNING_MESSAGE.value:
             self.client_status = appVar.CLIENT_RUNNING_STATUS.value
             return "You've been restarted by the server!\r\n"
+        else:
+            return message
 
     def check_output_message(self, message):
         """
