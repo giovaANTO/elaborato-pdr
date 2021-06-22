@@ -17,6 +17,7 @@ class Server:
         self.host = host
         self.port = port
         self.server_status = appVar.SERVER_STOPPED_STATUS.value
+        self.match_status = appVar.SERVER_MATCH_PAUSED.value
 
     def start_server(self):
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
@@ -64,6 +65,7 @@ class Server:
 
     def __timer_handler(self):
         self.broadcast_message("Ready in 5 seconds")
+        self.match_status = appVar.SERVER_MATCH_STARTED.value
         time.sleep(5)
         self.broadcast_message(appVar.CLIENT_RUNNING_MESSAGE.value)
 
@@ -108,6 +110,8 @@ class Server:
                 break
 
         self.register_client(name, client_socket)
+        while self.match_status != appVar.SERVER_MATCH_STARTED:
+            time.sleep(2)
 
         while True:
             while True:
@@ -204,14 +208,17 @@ def __startup_server_cmd():
     startServerButton.config(state=tk.DISABLED)
     shutdownServerButton.config(state=tk.NORMAL)
 
+
 def __shutdown_server_cmd():
     server.shutdown_server()
     startServerButton.config(state=tk.NORMAL)
     shutdownServerButton.config(state=tk.DISABLED)
 
+
 def __close_window_cmd():
     server.shutdown_server()
     root.quit()
+
 
 def refresh_scoreboard_list(scoreboard):
     textList.config(state=tk.NORMAL)
@@ -221,6 +228,7 @@ def refresh_scoreboard_list(scoreboard):
         role = scoreboard[name].get("role")
         textList.insert(tk.END, f"{name} - {points} - {role} \n")
     textList.config(state=tk.DISABLED)
+
 
 if __name__ == "__main__":
     server = Server('', 53000)
