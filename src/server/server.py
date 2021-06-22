@@ -1,11 +1,11 @@
 import random
-import tkinter as tk
 import time
-from src.server.server_status import ServerStatus
-from src.utils import roles, questions
-from src.utils.app_variables import applicationVariables as appVar
+import tkinter as tk
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
+
+from src.utils import roles, questions
+from src.utils.app_variables import ApplicationVariables as appVar
 
 
 class Server:
@@ -16,7 +16,7 @@ class Server:
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.status = ServerStatus.STOP
+        self.status = appVar.SERVER_STOPPED_STATUS.value
 
     def start_server(self):
         self.socket_instance = socket(AF_INET, SOCK_STREAM)
@@ -30,15 +30,15 @@ class Server:
         thread = Thread(target=self.__accept_connection)
         # Start the thread
         thread.start()
-        self.status = ServerStatus.RUN
+        self.status = appVar.SERVER_RUNNING_STATUS.value
 
     def shutdown_server(self):
-        if self.status == ServerStatus.RUN:
+        if self.status == appVar.SERVER_RUNNING_STATUS.value:
             for k in self.clients:
                 cli = self.clients[k]
                 cli.send(appVar.QUIT_MESSAGE.value)
             self.socket_instance.close()
-            self.status = ServerStatus.STOP
+            self.status = appVar.SERVER_STOPPED_STATUS.value
 
 
     def __accept_connection(self):

@@ -1,6 +1,6 @@
 import tkinter as tk
 from threading import Thread
-from src.utils.app_variables import applicationVariables as appVar
+from src.utils.app_variables import ApplicationVariables as appVar
 from src.client.client import Client
 
 
@@ -51,6 +51,7 @@ def on_closing(event=None):
 
 
 # *********** GUI PART ***************
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Client_GUI")
@@ -81,7 +82,7 @@ if __name__ == "__main__":
     # Handel the closing window event.
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
-    # *********** CONNECTION PART ***************
+# *********** CONNECTION PART ***************
 
     # Set a new client's communication with the server.
     my_client = Client(appVar.HOST.value, appVar.PORT.value)
