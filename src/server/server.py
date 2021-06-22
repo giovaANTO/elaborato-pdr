@@ -1,5 +1,6 @@
 import random
 import tkinter as tk
+import time
 from src.server.server_status import ServerStatus
 from src.utils import roles, questions
 from src.utils.app_variables import applicationVariables as appVar
@@ -90,6 +91,9 @@ class Server:
                     client_socket.send(choice_message.encode())
                     choice = client_socket.recv(Server.buffer_size).decode("utf8")
                     if choice == str(tricky_choice) or choice == appVar.QUIT_MESSAGE.value:
+                        msg = "You choose the tricky choice, bye...\r\n"
+                        client_socket.send(msg.encode())
+                        time.sleep(1)
                         msg = appVar.QUIT_MESSAGE.value
                         # Send a disconnection message to the user
                         client_socket.send(msg.encode())
