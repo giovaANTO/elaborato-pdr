@@ -63,7 +63,7 @@ class Client:
         :param message: The message to check before sending.
         :return: The checked message to send, empty if the client's status is paused.
         """
-        if self.client_status == appVar.CLIENT_RUNNING_STATUS.value:
+        if (self.client_status == appVar.CLIENT_RUNNING_STATUS.value) or (message == appVar.QUIT_MESSAGE.value):
             self.socket_instance.send(message.encode())
             return message
         elif self.client_status == appVar.CLIENT_PAUSED_STATUS.value:
