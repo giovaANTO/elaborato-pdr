@@ -55,13 +55,13 @@ class Client:
             return "You've been paused by the server!\r\n"
         elif message == appVar.CLIENT_RUNNING_MESSAGE.value:
             self.client_status = appVar.CLIENT_RUNNING_STATUS.value
-            return "You've been restarted by the server!\r\n"
+            return "The match starts right now!\r\n"
         else:
             return message
 
     def check_output_message(self, message):
         """
-        Check if the message to send can be sent or not.
+        Check if the message to send can be send or not.
         :param message: The message to check before sending.
         :return: The checked message to send, empty if the client's status is paused.
         """
