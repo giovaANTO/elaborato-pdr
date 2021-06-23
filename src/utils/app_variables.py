@@ -21,14 +21,14 @@ class ApplicationVariables(Enum):
     SERVER_MATCH_STARTED = 3
     # Paused match's status value.
     SERVER_MATCH_PAUSED = 4
-    # Minimum participant that should join the server before the game starts
-    MIN_PARTICIPANTS = 2
+    # Exact number of participants that must join the server before the game starts
+    PARTICIPANTS = 2
 
 
     """
     Shared variables
     """
-    # The host name for the connection.
+    # The host for the connection.
     HOST = ""
     # The port's number used for the connection.
     PORT = 53000

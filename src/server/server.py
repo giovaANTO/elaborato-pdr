@@ -231,7 +231,7 @@ class Server:
         """
 
         # Check if the client can join in the server
-        if len(self.clients) < appVar.MIN_PARTICIPANTS.value and self.match_status == appVar.SERVER_MATCH_PAUSED.value:
+        if len(self.clients) < appVar.PARTICIPANTS.value and self.match_status == appVar.SERVER_MATCH_PAUSED.value:
             self.send_message(appVar.CLIENT_PAUSED_MESSAGE.value, client_socket)
             # Adding the name to the list on new clients
             self.clients[name] = {"socket": client_socket, "status": appVar.CLIENT_PAUSED_STATUS.value}
@@ -242,12 +242,12 @@ class Server:
             refresh_scoreboard_list(self.scoreboard)
             # If the minimum number of participants is reached then start a timer thread that will handle
             # the game flow
-            if len(self.clients) == appVar.MIN_PARTICIPANTS.value:
+            if len(self.clients) == appVar.PARTICIPANTS.value:
                 print("Timer started")
                 Thread(target=self.__timer_handler).start()
             # Print to clients the remaining number of clients that should joint the server for starting the game
             else:
-                remaining = appVar.MIN_PARTICIPANTS.value - len(self.clients)
+                remaining = appVar.PARTICIPANTS.value - len(self.clients)
                 self.broadcast_message(f"waiting for :  {remaining} more participants")
         # Disallow the client to join the game
         else:
