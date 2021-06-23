@@ -14,5 +14,6 @@ def random_role():
              "Monk"]
     return random.SystemRandom().choice(roles)
 
+
 if __name__ == "__main__":
     print(random_role())

@@ -1,8 +1,8 @@
-import time
 import tkinter as tk
 from threading import Thread
-from src.utils.app_variables import ApplicationVariables as appVar
+
 from src.client.client import Client
+from src.utils.app_variables import ApplicationVariables as appVar
 
 
 def receive():
@@ -19,7 +19,8 @@ def receive():
                 on_closing()
             message_list.insert(tk.END, message)
             # In case an error occurs, probably the client left the chat.
-        except OSError:
+        except OSError as e:
+            print(str(e))
             break
 
 
@@ -81,7 +82,7 @@ if __name__ == "__main__":
     send_button = tk.Button(root, text="Send", command=send)
     send_button.pack()
 
-    # Handel the closing window event.
+    # Handle the closing window event.
     root.protocol("WM_DELETE_WINDOW", on_closing)
 
 # *********** CONNECTION PART ***************
