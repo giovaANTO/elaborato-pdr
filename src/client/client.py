@@ -50,10 +50,10 @@ class Client:
         :return: message: The checked message read, changed if the message contains a command variable
                 to change the client's status.
         """
-        if message == appVar.CLIENT_PAUSED_MESSAGE.value:
+        if appVar.CLIENT_PAUSED_MESSAGE.value in message:
             self.client_status = appVar.CLIENT_PAUSED_STATUS.value
             return "You've been paused by the server!\r\n"
-        elif message == appVar.CLIENT_RUNNING_MESSAGE.value:
+        elif appVar.CLIENT_RUNNING_MESSAGE.value in message:
             self.client_status = appVar.CLIENT_RUNNING_STATUS.value
             return "The match starts right now!\r\n"
         else:
