@@ -15,7 +15,7 @@ def receive():
             message = my_client.client_read()
             # If message contains the quit command, client's communication must be closed.
             # Else the message's list is shown on screen.
-            if message == appVar.QUIT_MESSAGE.value:
+            if appVar.QUIT_MESSAGE.value in message:
                 on_closing()
             message_list.insert(tk.END, message)
             # In case an error occurs, probably the client left the chat.
