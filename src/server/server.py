@@ -328,7 +328,6 @@ def close_window_cmd():
     server.shutdown_server()
 
 
-
 def refresh_scoreboard_list(scoreboard):
     """
     Refresh the scoreboard list in the gui
@@ -343,15 +342,20 @@ def refresh_scoreboard_list(scoreboard):
     textList.config(state=tk.DISABLED)
 
 
+# *********** GUI PART ***************
+
 if __name__ == "__main__":
-    server = Server('', 53000)
+    server = Server(appVar.HOST.value, appVar.PORT.value)
 
     root = tk.Tk()
     root.geometry("300x200")
     root.title("GameChat server")
 
     startupFrame = tk.Frame(root)
+    # The start button, allows server to listen to new connections.
     startServerButton = tk.Button(startupFrame, text="Start", command=lambda: startup_server_cmd())
+    # The shutdown button, closes server's connections and doesn't allow it to listen to new connections
+    # until the start button is clicked again.
     shutdownServerButton = tk.Button(startupFrame, text="Shutdown", command=lambda: shutdown_server_cmd(),
                                      state=tk.DISABLED)
 
@@ -359,6 +363,7 @@ if __name__ == "__main__":
     shutdownServerButton.pack(side=tk.RIGHT)
     startupFrame.pack(side=tk.TOP, pady=(10, 0))
 
+    # A Frame to show all the clients actually connected, their score and role.
     clientListFrame = tk.Frame(root)
     clientListFrameTitle = tk.Label(clientListFrame, text="Scoreboard:").pack()
     textList = tk.Text(clientListFrame, height=10, width=30)
@@ -367,5 +372,7 @@ if __name__ == "__main__":
     textList.pack()
     clientListFrame.pack(side=tk.BOTTOM, pady=(5, 10))
 
+    # Handle the closing window event.
     root.protocol("WM_DELETE_WINDOW", close_window_cmd)
+    # Start the gui.
     root.mainloop()

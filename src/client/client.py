@@ -27,7 +27,7 @@ class Client:
                 to change the client's status.
         """
         message = self.socket_instance.recv(appVar.BUFFER_SIZE.value).decode("utf8")
-        return self.check_input_message(message)
+        return self.__check_input_message(message)
 
     def send_message(self, message):
         """
@@ -35,7 +35,7 @@ class Client:
         :param message: Message to send.
         :return: message: The checked message, empty if the client is stopped.
         """
-        return self.check_output_message(message)
+        return self.__check_output_message(message)
 
     def close_connection(self):
         """
@@ -43,7 +43,7 @@ class Client:
         """
         self.socket_instance.close()
 
-    def check_input_message(self, message):
+    def __check_input_message(self, message):
         """
         Check if the message received by the server is a command to change the Client's status.
         :param message: The input message to check.
@@ -59,7 +59,7 @@ class Client:
         else:
             return message
 
-    def check_output_message(self, message):
+    def __check_output_message(self, message):
         """
         Check if the message to send can be send or not.
         :param message: The message to check before sending.
