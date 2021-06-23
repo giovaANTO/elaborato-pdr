@@ -1,8 +1,8 @@
-import time
 import tkinter as tk
 from threading import Thread
-from src.utils.app_variables import ApplicationVariables as appVar
+
 from src.client.client import Client
+from src.utils.app_variables import ApplicationVariables as appVar
 
 
 def receive():

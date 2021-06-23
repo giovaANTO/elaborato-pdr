@@ -342,8 +342,10 @@ def refresh_scoreboard_list(scoreboard):
     textList.config(state=tk.DISABLED)
 
 
+# *********** GUI PART ***************
+
 if __name__ == "__main__":
-    server = Server('', 53000)
+    server = Server(appVar.HOST.value, appVar.PORT.value)
 
     root = tk.Tk()
     root.geometry("300x200")
