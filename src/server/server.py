@@ -77,7 +77,7 @@ class Server:
 
             print(f"New client connected : {address}")
             # Sending a welcome message to newly created client
-            self.send_message("Welcome to GameChat server! type your name to begin\r\n")
+            self.send_message("Welcome to GameChat server! type your name to begin\r\n",client)
             # Setting up a new thread for the newly created client.
             # The thread will use the __manage_client function
             client_thread = Thread(target=self.__manage_client, args=(client,))
